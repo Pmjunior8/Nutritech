@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>NutriTech AI Coach</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NutriTech">
+<meta name="theme-color" content="#e8622a">
+<meta name="description" content="Seu coach de nutrição e saúde com IA pessoal">
+
+<!-- Ícones Apple -->
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png">
+<link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192x192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512x512.png">
+
+<!-- Ícone padrão -->
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+<link rel="shortcut icon" href="icons/icon-96x96.png">
+
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#07090f;--surf:#0e1220;--card:#111827;--brd:#1e2840;
+  --acc:#e8622a;--gld:#f5a623;--grn:#3ecf8e;--blu:#5b8fff;--red:#ff4d6d;
+  --txt:#eef0f8;--dim:#6b7494;
+  --fh:'Syne',sans-serif;--fb:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--bg);color:var(--txt);max-width:480px;margin:0 auto;overflow-x:hidden;min-height:100vh}
+button,input,select,textarea{font-family:var(--fb);color:var(--txt)}
+img{display:block;max-width:100%}
+
+/* ─── SPLASH ─── */
+#splash{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:opacity .5s}
+#splash.hide{opacity:0;pointer-events:none}
+.spl-name{font-family:var(--fh);font-size:2.6rem;font-weight:800}
+.spl-name span{color:var(--acc)}
+.spl-tag{font-size:.75rem;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:36px}
+.spin{width:36px;height:36px;border:3px solid var(--brd);border-top-color:var(--acc);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ─── TOAST ─── */
+#toast{position:fixed;top:64px;left:50%;transform:translateX(-50%) translateY(-50px);background:var(--grn);color:#000;font-weight:700;font-size:.78rem;padding:8px 20px;border-radius:999px;z-index:8000;transition:transform .3s;pointer-events:none;white-space:nowrap}
+#toast.on{transform:translateX(-50%) translateY(0)}
+#toast.bad{background:var(--red);color:#fff}
+
+/* ─── LOADER ─── */
+#ldr{position:fixed;inset:0;background:rgba(7,9,15,.88);z-index:7000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+#ldr.on{display:flex}
+#ldr p{color:var(--dim);font-size:.82rem}
+
+/* ─── MODAL ─── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:6000;display:none;align-items:flex-end}
+.overlay.on{display:flex}
+.sheet{background:var(--surf);border-radius:20px 20px 0 0;width:100%;max-height:90vh;overflow-y:auto;padding:20px 16px 48px;border-top:1px solid var(--brd);animation:up .22s ease}
+@keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sh-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.sh-title{font-family:var(--fh);font-size:1.05rem;font-weight:800}
+.sh-close{background:none;border:none;color:var(--dim);cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;border-radius:6px}
+.sh-close:hover{color:var(--txt)}
+
+/* ─── TOP NAV ─── */
+.topnav{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;height:56px;background:rgba(7,9,15,.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:500}
+.logo{font-family:var(--fh);font-size:.95rem;font-weight:800}
+.logo span{color:var(--acc)}
+.topright{display:flex;align-items:center;gap:8px}
+.streak-pill{font-size:.72rem;color:var(--gld);font-weight:700;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.25);padding:3px 10px;border-radius:999px}
+.avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--gld));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.72rem}
+
+/* ─── BOTTOM NAV ─── */
+.botnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(14,18,32,.97);border-top:1px solid var(--brd);display:grid;grid-template-columns:repeat(5,1fr);z-index:500;padding-bottom:env(safe-area-inset-bottom,4px)}
+.bnt{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px 4px;border:none;background:none;color:var(--dim);cursor:pointer;transition:color .2s;font-size:.56rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.bnt.on{color:var(--acc)}
+.bnt i{font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center}
+.bnt i svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ─── FAB ─── */
+.fab{position:fixed;bottom:74px;right:16px;width:50px;height:50px;border-radius:50%;background:var(--acc);border:none;cursor:pointer;box-shadow:0 4px 20px rgba(232,98,42,.45);z-index:490;display:none;align-items:center;justify-content:center;font-size:1.6rem;color:#fff;transition:transform .15s}
+.fab.on{display:flex}
+.fab:active{transform:scale(.9)}
+
+/* ─── SCREENS ─── */
+main{padding:64px 0 68px}
+.scr{display:none;padding:14px 14px 8px;animation:fadeIn .2s ease}
+.scr.on{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── TYPOGRAPHY ─── */
+.pg-title{font-family:var(--fh);font-size:1.3rem;font-weight:800;margin-bottom:3px}
+.pg-sub{color:var(--dim);font-size:.8rem;margin-bottom:14px;line-height:1.5}
+
+/* ─── CARD ─── */
+.card{background:var(--card);border:1px solid var(--brd);border-radius:14px;padding:14px;margin-bottom:12px}
+.card-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}
+.card-lbl{font-family:var(--fh);font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.card-act{background:none;border:none;color:var(--acc);font-size:.72rem;font-weight:700;cursor:pointer;font-family:var(--fh);padding:0}
+
+/* ─── FORM ─── */
+.fld{margin-bottom:12px}
+.fld label{display:block;font-size:.7rem;font-weight:600;color:var(--dim);margin-bottom:5px;letter-spacing:.04em;text-transform:uppercase}
+.fld input,.fld select,.fld textarea{width:100%;background:var(--bg);border:1px solid var(--brd);border-radius:10px;padding:10px 13px;color:var(--txt);font-size:.86rem;outline:none;transition:border-color .2s;appearance:none;-webkit-appearance:none}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--acc)}
+.fld select option{background:var(--bg)}
+.fld textarea{resize:vertical;min-height:68px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ─── BUTTONS ─── */
+.btn{display:block;width:100%;padding:13px;border:none;border-radius:11px;font-family:var(--fh);font-weight:700;font-size:.86rem;cursor:pointer;transition:all .15s;letter-spacing:.03em;text-align:center}
+.btn-acc{background:var(--acc);color:#fff}
+.btn-acc:active{opacity:.8}
+.btn-acc:disabled{opacity:.38;cursor:not-allowed}
+.btn-grn{background:var(--grn);color:#000;font-weight:800}
+.btn-out{background:transparent;border:1px solid var(--brd);color:var(--txt)}
+.btn-out:active{border-color:var(--acc)}
+.mt8{margin-top:8px}
+.mt12{margin-top:12px}
+
+/* ─── HOME ─── */
+.hero{background:linear-gradient(135deg,rgba(232,98,42,.13),rgba(245,166,35,.06));border:1px solid rgba(232,98,42,.2);border-radius:14px;padding:16px;margin-bottom:12px;position:relative;overflow:hidden}
+.hero::after{content:'N';position:absolute;right:-6px;top:-12px;font-family:var(--fh);font-size:5rem;font-weight:800;color:rgba(232,98,42,.06);pointer-events:none}
+.hero h1{font-family:var(--fh);font-size:1.25rem;font-weight:800;margin-bottom:4px}
+.hero h1 b{color:var(--acc)}
+.hero p{font-size:.8rem;color:#8a93b8;line-height:1.55}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:11px 8px;text-align:center}
+.stat-v{font-family:var(--fh);font-size:1.5rem;font-weight:800;line-height:1}
+.stat-l{font-size:.58rem;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;margin-top:3px}
+.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.qa{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:13px 11px;cursor:pointer;text-align:left;transition:transform .15s}
+.qa:active{transform:scale(.95)}
+.qa-icon{font-size:1.4rem;margin-bottom:6px}
+.qa-t{font-family:var(--fh);font-size:.8rem;font-weight:700;color:var(--txt);margin-bottom:2px}
+.qa-s{font-size:.67rem;color:var(--dim)}
+.task-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--brd)}
+.task-row:last-child{border:none;padding-bottom:0}
+.chk{width:22px;height:22px;border-radius:50%;border:2px solid var(--brd);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;font-size:.65rem;color:#fff}
+.chk.done{background:var(--grn);border-color:var(--grn)}
+.task-info{flex:1}
+.task-n{font-size:.83rem;font-weight:500}
+.task-n.done{text-decoration:line-through;color:var(--dim)}
+.task-sub{font-size:.63rem;color:var(--dim);margin-top:1px}
+.task-pts{font-size:.7rem;color:var(--gld);font-weight:700;flex-shrink:0}
+
+/* ─── FOOD ─── */
+.macro-row{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px}
+.mac{background:var(--card);border-radius:10px;padding:9px 6px;text-align:center}
+.mac-v{font-family:var(--fh);font-weight:700;font-size:.95rem}
+.mac-l{font-size:.58rem;color:var(--dim);text-transform:uppercase;margin-top:2px}
+.meal-card{background:var(--surf);border-radius:11px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.meal-thumb{width:46px;height:46px;border-radius:9px;object-fit:cover;flex-shrink:0;background:var(--brd)}
+.meal-thumb-ph{width:46px;height:46px;border-radius:9px;background:var(--brd);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.meal-info{flex:1;min-width:0}
+.meal-name{font-weight:600;font-size:.84rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.meal-meta{font-size:.67rem;color:var(--dim);margin-top:2px}
+.meal-kcal{font-family:var(--fh);font-weight:700;font-size:.82rem;color:var(--acc);flex-shrink:0}
+.del-btn{background:none;border:none;color:var(--dim);cursor:pointer;padding:4px;flex-shrink:0;display:flex;align-items:center}
+.del-btn:hover{color:var(--red)}
+.del-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+.upload-zone{border:2px dashed var(--brd);border-radius:13px;min-height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:border-color .2s;margin-bottom:10px;overflow:hidden}
+.upload-zone:hover,.upload-zone:active{border-color:var(--acc)}
+.upload-zone.has-img{border-style:solid;border-color:var(--acc);min-height:0}
+.upload-ph{text-align:center;padding:16px;pointer-events:none}
+.upload-ph-icon{font-size:1.8rem;margin-bottom:6px}
+.upload-ph-t{font-weight:600;font-size:.86rem;margin-bottom:3px}
+.upload-ph-s{font-size:.7rem;color:var(--dim)}
+.nut-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin:10px 0}
+.nc{background:var(--bg);border-radius:9px;padding:10px;text-align:center}
+.nc-v{font-family:var(--fh);font-size:1.1rem;font-weight:800}
+.nc-l{font-size:.6rem;color:var(--dim);text-transform:uppercase;margin-top:2px}
+.ai-box{background:var(--bg);border-left:3px solid var(--acc);border-radius:0 8px 8px 0;padding:10px 13px;font-size:.8rem;color:#8a93b8;line-height:1.7;margin-top:9px;white-space:pre-wrap}
+.empty-box{text-align:center;padding:24px 16px;color:var(--dim)}
+.empty-box-icon{font-size:2rem;margin-bottom:8px}
+.empty-box-t{font-size:.84rem;font-weight:600;color:var(--txt);margin-bottom:3px}
+.empty-box-s{font-size:.74rem}
+
+/* ─── GOALS ─── */
+.goal-item{background:var(--surf);border-radius:12px;padding:13px;margin-bottom:9px;border-left:3px solid var(--acc)}
+.goal-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px}
+.goal-title-t{font-weight:600;font-size:.88rem}
+.goal-cat-t{font-size:.63rem;color:var(--dim);margin-top:2px}
+.goal-btns{display:flex;gap:4px;flex-shrink:0}
+.icon-btn{background:none;border:none;cursor:pointer;padding:4px;color:var(--dim);display:flex;align-items:center;justify-content:center;border-radius:6px}
+.icon-btn:hover{color:var(--acc)}
+.icon-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.prog-bar-wrap{height:5px;background:var(--brd);border-radius:3px;overflow:hidden;margin-bottom:5px}
+.prog-bar{height:100%;border-radius:3px;transition:width .5s ease}
+.prog-info{display:flex;justify-content:space-between;font-size:.67rem;color:var(--dim)}
+
+/* ─── COACH ─── */
+.chat-wrap{display:flex;flex-direction:column;gap:9px;padding:2px 0 10px;max-height:50vh;overflow-y:auto}
+.msg{max-width:86%;padding:10px 13px;border-radius:14px;font-size:.83rem;line-height:1.65;word-break:break-word}
+.msg-ai{background:var(--surf);border:1px solid var(--brd);align-self:flex-start;border-bottom-left-radius:3px}
+.msg-me{background:var(--acc);color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
+.msg-ai b{color:var(--acc)}
+.typing{display:none;gap:4px;padding:10px 13px;background:var(--surf);border:1px solid var(--brd);border-radius:14px;border-bottom-left-radius:3px;align-self:flex-start;align-items:center}
+.typing.on{display:flex}
+.typing span{width:6px;height:6px;background:var(--dim);border-radius:50%;animation:bob .8s infinite}
+.typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
+@keyframes bob{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+.chat-input-row{display:flex;gap:7px;margin-top:8px}
+.chat-input{flex:1;background:var(--bg);border:1px solid var(--brd);border-radius:11px;padding:10px 13px;color:var(--txt);font-size:.84rem;outline:none;transition:border-color .2s}
+.chat-input:focus{border-color:var(--acc)}
+.send-btn{width:42px;height:42px;background:var(--acc);border:none;border-radius:11px;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.send-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.qp-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:11px}
+.qp{background:var(--surf);border:1px solid var(--brd);border-radius:999px;padding:5px 12px;font-size:.7rem;color:var(--dim);cursor:pointer;white-space:nowrap;transition:all .15s}
+.qp:active,.qp:hover{border-color:var(--acc);color:var(--acc)}
+
+/* ─── PROGRESS ─── */
+.ring-wrap{display:flex;justify-content:center;margin:6px 0 14px}
+.ring-outer{position:relative;width:110px;height:110px}
+.ring-outer svg{transform:rotate(-90deg)}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-pct{font-family:var(--fh);font-size:1.7rem;font-weight:800;color:var(--acc);line-height:1}
+.ring-sub{font-size:.58rem;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+.hab-row{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--brd)}
+.hab-row:last-child{border:none;padding-bottom:0}
+.hab-icon{font-size:1rem;width:22px;text-align:center;flex-shrink:0}
+.hab-name{font-size:.82rem;font-weight:500;flex:1}
+.hab-track{flex:1.5;height:5px;background:var(--brd);border-radius:3px;overflow:hidden}
+.hab-fill{height:100%;border-radius:3px;transition:width 1s ease}
+.hab-pct{font-size:.68rem;color:var(--dim);min-width:30px;text-align:right}
+.ach-wrap{display:flex;flex-wrap:wrap;gap:7px}
+.ach{background:var(--surf);border:1px solid var(--brd);border-radius:9px;padding:9px 10px;text-align:center;min-width:64px;transition:all .3s}
+.ach.locked{opacity:.22}
+.ach.open{border-color:var(--gld);background:rgba(245,166,35,.07)}
+.ach-icon{font-size:1.3rem}
+.ach-lbl{font-size:.58rem;color:var(--dim);margin-top:2px}
+.stats2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+</style>
+</head>
+<body>
+
+<!-- INSTALL BANNER -->
+<div id="install-banner" style="display:none;position:fixed;bottom:72px;left:50%;transform:translateX(-50%);width:calc(100% - 28px);max-width:452px;background:linear-gradient(135deg,#1a2240,#111827);border:1px solid #e8622a;border-radius:14px;padding:12px 16px;z-index:600;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(232,98,42,.3)">
+  <div style="font-size:1.8rem">📲</div>
+  <div style="flex:1">
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:.88rem;color:#eef0f8">Instalar NutriTech</div>
+    <div style="font-size:.72rem;color:#6b7494;margin-top:1px">Adicionar à tela inicial como app</div>
+  </div>
+  <button onclick="installPWA()" style="background:#e8622a;border:none;border-radius:9px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:.78rem;padding:8px 14px;cursor:pointer;white-space:nowrap">Instalar</button>
+  <button onclick="this.closest('#install-banner').style.display='none'" style="background:none;border:none;color:#6b7494;cursor:pointer;padding:4px;font-size:1rem">✕</button>
+</div>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="spl-name">Nutri<span>Tech</span></div>
+  <div class="spl-tag">Coach de IA Pessoal</div>
+  <div class="spin"></div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- LOADER -->
+<div id="ldr"><div class="spin"></div><p id="ldr-msg">Analisando com IA...</p></div>
+
+<!-- ══ MODAL: REFEIÇÃO ══ -->
+<div class="overlay" id="modal-meal" onclick="closeIfBg(event,'modal-meal')">
+  <div class="sheet">
+    <div class="sh-head">
+      <div class="sh-title">🥗 Registrar Refeição</div>
+      <button class="sh-close" onclick="closeModal('modal-meal')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="fld"><label>Nome *</label><input id="m-name" placeholder="Ex: Almoço, Café da manhã..."></div>
+    <div class="fld"><label>Alimentos</label><input id="m-foods" placeholder="Ex: Arroz, feijão, frango grelhado"></div>
+    <div class="g2">
+      <div class="fld"><label>Calorias (kcal)</label><input id="m-cal" type="number" min="0" placeholder="450"></div>
+      <div class="fld"><label>Proteína (g)</label><input id="m-prot" type="number" min="0" placeholder="30"></div>
+      <div class="fld"><label>Carb (g)</label><input id="m-carb" type="number" min="0" placeholder="55"></div>
+      <div class="fld"><label>Gordura (g)</label><input id="m-fat" type="number" min="0" placeholder="12"></div>
+    </div>
+    <div class="fld"><label>Horário</label><input id="m-time" type="time"></div>
+    <div class="fld">
+      <label>Foto (opcional)</label>
+      <div class="upload-zone" id="meal-zone" onclick="triggerFile('meal-photo-input')">
+        <div class="upload-ph" id="meal-zone-ph">
+          <div class="upload-ph-icon">📷</div>
+          <div class="upload-ph-t">Toque para adicionar foto</div>
+          <div class="upload-ph-s">Câmera ou galeria</div>
+        </div>
+        <img id="meal-photo-prev" style="display:none;border-radius:11px;width:100%">
+      </div>
+      <input type="file" id="meal-photo-input" accept="image/*" capture="environment" style="display:none" onchange="onMealPhoto(event)">
+    </div>
+    <button class="btn btn-acc" onclick="saveMeal()">💾 Salvar Refeição</button>
+    <div style="text-align:center;font-size:.72rem;color:var(--dim);margin:10px 0">— ou —</div>
+    <button class="btn btn-out" onclick="closeModal('modal-meal');goTo('food');setTimeout(()=>document.getElementById('ai-zone').scrollIntoView({behavior:'smooth'}),300)">📸 Analisar foto com IA</button>
+  </div>
+</div>
+
+<!-- ══ MODAL: META ══ -->
+<div class="overlay" id="modal-goal" onclick="closeIfBg(event,'modal-goal')">
+  <div class="sheet">
+    <div class="sh-head">
+      <div class="sh-title">🎯 Nova Meta</div>
+      <button class="sh-close" onclick="closeModal('modal-goal')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="fld"><label>Título *</label><input id="g-title" placeholder="Ex: Perder 5kg em 2 meses"></div>
+    <div class="fld"><label>Categoria</label>
+      <select id="g-cat">
+        <option value="saude">🥗 Saúde & Nutrição</option>
+        <option value="fitness">💪 Fitness</option>
+        <option value="financeiro">💰 Financeiro</option>
+        <option value="estudo">📚 Estudos</option>
+        <option value="habito">⚡ Hábito</option>
+        <option value="outro">🎯 Outro</option>
+      </select>
+    </div>
+    <div class="g2">
+      <div class="fld"><label>Valor Atual</label><input id="g-curr" type="number" placeholder="0"></div>
+      <div class="fld"><label>Meta Final *</label><input id="g-target" type="number" placeholder="100"></div>
+    </div>
+    <div class="g2">
+      <div class="fld"><label>Unidade</label><input id="g-unit" placeholder="kg, km, R$..."></div>
+      <div class="fld"><label>Prazo</label><input id="g-date" type="date"></div>
+    </div>
+    <div class="fld"><label>Descrição</label><textarea id="g-desc" placeholder="Detalhes e motivação..."></textarea></div>
+    <button class="btn btn-acc" onclick="saveGoal()">🎯 Criar Meta</button>
+  </div>
+</div>
+
+<!-- ══ MODAL: ATUALIZAR META ══ -->
+<div class="overlay" id="modal-upd" onclick="closeIfBg(event,'modal-upd')">
+  <div class="sheet">
+    <div class="sh-head">
+      <div class="sh-title">📈 Atualizar Progresso</div>
+      <button class="sh-close" onclick="closeModal('modal-upd')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="fld"><label id="upd-hint">Novo valor</label><input id="upd-val" type="number"></div>
+    <input type="hidden" id="upd-gid">
+    <button class="btn btn-acc" onclick="doUpdateGoal()">✅ Atualizar</button>
+  </div>
+</div>
+
+<!-- ══ TOP NAV ══ -->
+<div class="topnav">
+  <div class="logo">Nutri<span>Tech</span></div>
+  <div class="topright">
+    <div class="streak-pill" id="streak-pill">🔥 1 dia</div>
+    <div class="avatar">P</div>
+  </div>
+</div>
+
+<!-- ══ FAB ══ -->
+<button class="fab" id="fab" onclick="openModal('modal-meal')">＋</button>
+
+<!-- ══ MAIN ══ -->
+<main>
+
+  <!-- HOME -->
+  <div class="scr on" id="s-home">
+    <div class="hero">
+      <h1>Olá, <b>Phedro</b> 👋</h1>
+      <p>Pronto para evoluir hoje?<br>Registre refeições, crie metas e converse com seu coach.</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-v" id="h-streak" style="color:var(--gld)">1</div><div class="stat-l">🔥 Streak</div></div>
+      <div class="stat"><div class="stat-v" id="h-pts" style="color:var(--acc)">0</div><div class="stat-l">⭐ Pts</div></div>
+      <div class="stat"><div class="stat-v" id="h-tasks" style="color:var(--grn)">0/4</div><div class="stat-l">✅ Tarefas</div></div>
+    </div>
+    <div class="qa-grid">
+      <button class="qa" onclick="goTo('food')"><div class="qa-icon">🍽️</div><div class="qa-t">Refeições</div><div class="qa-s">Registrar & analisar</div></button>
+      <button class="qa" onclick="goTo('goals')"><div class="qa-icon">🎯</div><div class="qa-t">Metas</div><div class="qa-s">Criar & acompanhar</div></button>
+      <button class="qa" onclick="goTo('coach')"><div class="qa-icon">🤖</div><div class="qa-t">Coach IA</div><div class="qa-s">Perguntas & dicas</div></button>
+      <button class="qa" onclick="goTo('progress')"><div class="qa-icon">📊</div><div class="qa-t">Progresso</div><div class="qa-s">Ver evolução</div></button>
+    </div>
+    <div class="card">
+      <div class="card-hd"><span class="card-lbl">Tarefas de Hoje</span><span id="task-prog" style="font-size:.7rem;color:var(--grn);font-weight:700">0/4</span></div>
+      <div id="task-list">
+        <div class="task-row" data-pts="10"><div class="chk" onclick="toggleTask(this)"></div><div class="task-info"><div class="task-n">💧 Beber 2L de água</div><div class="task-sub">Saúde</div></div><div class="task-pts">+10</div></div>
+        <div class="task-row" data-pts="20"><div class="chk" onclick="toggleTask(this)"></div><div class="task-info"><div class="task-n">🥗 Registrar uma refeição</div><div class="task-sub">Nutrição</div></div><div class="task-pts">+20</div></div>
+        <div class="task-row" data-pts="15"><div class="chk" onclick="toggleTask(this)"></div><div class="task-info"><div class="task-n">🤖 Conversar com o Coach</div><div class="task-sub">Bem-estar</div></div><div class="task-pts">+15</div></div>
+        <div class="task-row" data-pts="25"><div class="chk" onclick="toggleTask(this)"></div><div class="task-info"><div class="task-n">🏃 30 min de atividade</div><div class="task-sub">Fitness</div></div><div class="task-pts">+25</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOD LOG -->
+  <div class="scr" id="s-food">
+    <div class="pg-title">🍽️ Diário Alimentar</div>
+    <div class="pg-sub">Busque alimentos ou registre manualmente</div>
+    <div class="macro-row">
+      <div class="mac"><div class="mac-v" id="tot-cal" style="color:var(--acc)">0</div><div class="mac-l">kcal</div></div>
+      <div class="mac"><div class="mac-v" id="tot-prot" style="color:var(--blu)">0g</div><div class="mac-l">Prot</div></div>
+      <div class="mac"><div class="mac-v" id="tot-carb" style="color:var(--gld)">0g</div><div class="mac-l">Carb</div></div>
+      <div class="mac"><div class="mac-v" id="tot-fat" style="color:var(--grn)">0g</div><div class="mac-l">Gord</div></div>
+    </div>
+
+    <!-- FOOD SEARCH -->
+    <div class="card">
+      <div class="card-hd"><span class="card-lbl">🔍 Buscar Alimento</span></div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input class="chat-input" id="food-search-input" placeholder="Ex: arroz cozido, frango grelhado..." style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();searchFood()}">
+        <button class="send-btn" onclick="searchFood()" style="flex-shrink:0">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </div>
+      <!-- Sugestões rápidas -->
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span class="qp" onclick="quickSearch('arroz branco cozido')">🍚 Arroz</span>
+        <span class="qp" onclick="quickSearch('feijão cozido')">🫘 Feijão</span>
+        <span class="qp" onclick="quickSearch('frango grelhado')">🍗 Frango</span>
+        <span class="qp" onclick="quickSearch('ovo cozido')">🥚 Ovo</span>
+        <span class="qp" onclick="quickSearch('banana')">🍌 Banana</span>
+        <span class="qp" onclick="quickSearch('pão de forma')">🍞 Pão</span>
+        <span class="qp" onclick="quickSearch('leite integral')">🥛 Leite</span>
+        <span class="qp" onclick="quickSearch('batata cozida')">🥔 Batata</span>
+      </div>
+      <div id="search-results"></div>
+    </div>
+
+    <!-- ADD PORTION MODAL INLINE -->
+    <div id="portion-panel" style="display:none">
+      <div class="card" style="border-color:var(--acc)">
+        <div class="card-hd">
+          <span class="card-lbl" id="portion-food-name">Alimento</span>
+          <button onclick="document.getElementById('portion-panel').style.display='none'" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:.75rem">✕ Fechar</button>
+        </div>
+        <div class="nut-grid" id="portion-macros-preview" style="margin-bottom:10px"></div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+          <div class="fld" style="flex:1;margin:0">
+            <label style="font-size:.65rem;color:var(--dim);text-transform:uppercase;display:block;margin-bottom:4px">Porção (g)</label>
+            <input class="chat-input" id="portion-grams" type="number" value="100" min="1" max="9999" oninput="updatePortionPreview()" style="width:100%">
+          </div>
+          <div class="fld" style="flex:1;margin:0">
+            <label style="font-size:.65rem;color:var(--dim);text-transform:uppercase;display:block;margin-bottom:4px">Refeição</label>
+            <select id="portion-meal-name" style="width:100%;background:var(--bg);border:1px solid var(--brd);border-radius:10px;padding:10px;color:var(--txt);font-size:.82rem;outline:none">
+              <option>Café da manhã</option>
+              <option selected>Almoço</option>
+              <option>Lanche</option>
+              <option>Jantar</option>
+              <option>Ceia</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-grn" onclick="addPortionToLog()">✅ Adicionar ao Diário</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hd"><span class="card-lbl">Refeições de hoje</span><button class="card-act" onclick="openModal('modal-meal')">+ Manual</button></div>
+      <div id="meal-list"><div class="empty-box"><div class="empty-box-icon">🥗</div><div class="empty-box-t">Nenhuma refeição</div><div class="empty-box-s">Busque um alimento acima ou toque em + Manual</div></div></div>
+    </div>
+  </div>
+
+  <!-- GOALS -->
+  <div class="scr" id="s-goals">
+    <div class="pg-title">🎯 Minhas Metas</div>
+    <div class="pg-sub">Defina objetivos e acompanhe seu progresso</div>
+    <button class="btn btn-acc" style="margin-bottom:12px" onclick="openModal('modal-goal')">＋ Nova Meta</button>
+    <div id="goals-list"><div class="empty-box"><div class="empty-box-icon">🎯</div><div class="empty-box-t">Nenhuma meta criada</div><div class="empty-box-s">Toque em + Nova Meta para começar!</div></div></div>
+  </div>
+
+  <!-- COACH -->
+  <div class="scr" id="s-coach">
+    <div class="pg-title">🤖 Coach de IA</div>
+    <div class="pg-sub">Seu nutricionista e coach pessoal 24h</div>
+    <div class="qp-wrap">
+      <div class="qp" onclick="sendQuick('Como emagrecer sem perder músculo?')">💪 Emagrecer</div>
+      <div class="qp" onclick="sendQuick('Alimentos que reduzem ansiedade?')">😌 Ansiedade</div>
+      <div class="qp" onclick="sendQuick('Receita saudável e rápida para almoço?')">🥗 Receita</div>
+      <div class="qp" onclick="sendQuick('Qual a melhor dieta para ganhar massa muscular?')">🏋️ Massa</div>
+      <div class="qp" onclick="sendQuick('Como melhorar minha digestão?')">🫁 Digestão</div>
+      <div class="qp" onclick="sendQuick('Alimentos que dão mais energia?')">⚡ Energia</div>
+    </div>
+    <div class="card" style="padding:12px">
+      <div class="chat-wrap" id="chat-wrap">
+        <div class="msg msg-ai">Olá <b>Phedro</b>! 👋 Sou seu Coach de IA da NutriTech.<br><br>Posso ajudar com <b>nutrição</b>, <b>saúde</b>, <b>dieta</b>, <b>receitas</b> e muito mais. O que você precisa hoje?</div>
+      </div>
+      <div class="typing" id="typing"><span></span><span></span><span></span></div>
+      <div class="chat-input-row">
+        <input class="chat-input" id="chat-input" placeholder="Sua pergunta..." onkeydown="if(event.key==='Enter'){event.preventDefault();sendMessage()}">
+        <button class="send-btn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="scr" id="s-progress">
+    <div class="pg-title">📊 Progresso</div>
+    <div class="pg-sub">Acompanhe sua evolução semanal</div>
+    <div class="card">
+      <div class="card-hd"><span class="card-lbl">Score da Semana</span></div>
+      <div class="ring-wrap">
+        <div class="ring-outer">
+          <svg width="110" height="110" viewBox="0 0 110 110">
+            <circle cx="55" cy="55" r="46" fill="none" stroke="#1e2840" stroke-width="8"/>
+            <circle cx="55" cy="55" r="46" fill="none" stroke="#e8622a" stroke-width="8"
+              stroke-dasharray="289.03" stroke-dashoffset="289.03" id="ring-path"
+              stroke-linecap="round" style="transition:stroke-dashoffset 1.2s ease"/>
+          </svg>
+          <div class="ring-center">
+            <div class="ring-pct" id="ring-pct">0%</div>
+            <div class="ring-sub">Score</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><span class="card-lbl">Hábitos da Semana</span></div>
+      <div class="hab-row"><div class="hab-icon">💧</div><div class="hab-name">Hidratação</div><div class="hab-track"><div class="hab-fill" id="hf1" style="background:var(--blu)"></div></div><div class="hab-pct" id="hp1">0%</div></div>
+      <div class="hab-row"><div class="hab-icon">🥗</div><div class="hab-name">Nutrição</div><div class="hab-track"><div class="hab-fill" id="hf2" style="background:var(--grn)"></div></div><div class="hab-pct" id="hp2">0%</div></div>
+      <div class="hab-row"><div class="hab-icon">🏃</div><div class="hab-name">Exercício</div><div class="hab-track"><div class="hab-fill" id="hf3" style="background:var(--gld)"></div></div><div class="hab-pct" id="hp3">0%</div></div>
+      <div class="hab-row"><div class="hab-icon">🤖</div><div class="hab-name">Coach IA</div><div class="hab-track"><div class="hab-fill" id="hf4" style="background:var(--acc)"></div></div><div class="hab-pct" id="hp4">0%</div></div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><span class="card-lbl">Estatísticas</span></div>
+      <div class="stats2">
+        <div class="mac" style="padding:12px"><div class="mac-v" id="prog-meals" style="color:var(--grn)">0</div><div class="mac-l">Refeições</div></div>
+        <div class="mac" style="padding:12px"><div class="mac-v" id="prog-goals" style="color:var(--blu)">0</div><div class="mac-l">Metas</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd"><span class="card-lbl">Conquistas</span></div>
+      <div class="ach-wrap">
+        <div class="ach locked" id="ac1"><div class="ach-icon">🥗</div><div class="ach-lbl">1ª Refeição</div></div>
+        <div class="ach locked" id="ac2"><div class="ach-icon">🎯</div><div class="ach-lbl">1ª Meta</div></div>
+        <div class="ach locked" id="ac3"><div class="ach-icon">🤖</div><div class="ach-lbl">1º Chat</div></div>
+        <div class="ach locked" id="ac4"><div class="ach-icon">⭐</div><div class="ach-lbl">100 pts</div></div>
+        <div class="ach locked" id="ac5"><div class="ach-icon">🔥</div><div class="ach-lbl">3 dias</div></div>
+        <div class="ach locked" id="ac6"><div class="ach-icon">🏆</div><div class="ach-lbl">7 dias</div></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ══ BOTTOM NAV ══ -->
+<div class="botnav">
+  <button class="bnt on" id="bn-home" onclick="goTo('home')">
+    <i><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></i>
+    Início
+  </button>
+  <button class="bnt" id="bn-food" onclick="goTo('food')">
+    <i><svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></i>
+    Refeições
+  </button>
+  <button class="bnt" id="bn-goals" onclick="goTo('goals')">
+    <i><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></i>
+    Metas
+  </button>
+  <button class="bnt" id="bn-coach" onclick="goTo('coach')">
+    <i><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></i>
+    Coach
+  </button>
+  <button class="bnt" id="bn-progress" onclick="goTo('progress')">
+    <i><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></i>
+    Progresso
+  </button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+let APP = {
+  pts: 0, streak: 1, tasksDone: 0,
+  meals: [], goals: [], history: [],
+  flags: { mealSaved: false, goalSaved: false, chatUsed: false },
+  pendingAI: null
+};
+
+const CAT_COLOR = { saude:'var(--grn)', fitness:'var(--acc)', financeiro:'var(--gld)', estudo:'var(--blu)', habito:'#b06fff', outro:'var(--dim)' };
+const CAT_EMOJI = { saude:'🥗', fitness:'💪', financeiro:'💰', estudo:'📚', habito:'⚡', outro:'🎯' };
+
+// ─── Init ──────────────────────────────────
+window.addEventListener('load', () => {
+  try { const s = localStorage.getItem('nt3'); if (s) APP = JSON.parse(s); } catch(e){}
+  setTimeout(() => document.getElementById('splash').classList.add('hide'), 1500);
+  renderAll();
+  setTimeout(updateRing, 2000);
+});
+
+function persist() { try { localStorage.setItem('nt3', JSON.stringify(APP)); } catch(e){} }
+
+// ─── Nav ──────────────────────────────────
+function goTo(name) {
+  document.querySelectorAll('.scr').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.bnt').forEach(b => b.classList.remove('on'));
+  document.getElementById('s-' + name).classList.add('on');
+  document.getElementById('bn-' + name).classList.add('on');
+  document.getElementById('fab').classList.toggle('on', name === 'food');
+  window.scrollTo(0, 0);
+  if (name === 'progress') setTimeout(updateRing, 200);
+}
+
+// ─── Modal ────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('on'); }
+function closeModal(id) { document.getElementById(id).classList.remove('on'); }
+function closeIfBg(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
+
+// ─── Toast ────────────────────────────────
+function toast(msg, bad) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = bad ? 'on bad' : 'on';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.className = '', 2600);
+}
+
+// ─── Loader ───────────────────────────────
+function setLoader(on, msg) {
+  document.getElementById('ldr').classList.toggle('on', on);
+  if (msg) document.getElementById('ldr-msg').textContent = msg;
+}
+
+// ─── File trigger ─────────────────────────
+function triggerFile(inputId) {
+  document.getElementById(inputId).click();
+}
+
+// ═══════════════════════════════════════════
+//  TASKS
+// ═══════════════════════════════════════════
+function toggleTask(el) {
+  const row = el.closest('.task-row');
+  const pts = parseInt(row.dataset.pts);
+  const nameEl = row.querySelector('.task-n');
+  const isDone = el.classList.contains('done');
+  if (isDone) {
+    el.classList.remove('done'); el.innerHTML = '';
+    nameEl.classList.remove('done');
+    APP.tasksDone--; APP.pts -= pts;
+    toast('Tarefa desmarcada');
+  } else {
+    el.classList.add('done'); el.innerHTML = '✓';
+    nameEl.classList.add('done');
+    APP.tasksDone++; APP.pts += pts;
+    toast('✅ +' + pts + ' pontos!');
+  }
+  persist(); renderStats(); checkAchievements();
+}
+
+// ═══════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════
+function renderAll() { renderStats(); renderMeals(); renderGoals(); checkAchievements(); }
+
+function renderStats() {
+  const { pts, streak, tasksDone } = APP;
+  document.getElementById('h-streak').textContent = streak;
+  document.getElementById('h-pts').textContent = pts;
+  document.getElementById('h-tasks').textContent = tasksDone + '/4';
+  document.getElementById('task-prog').textContent = tasksDone + '/4';
+  document.getElementById('streak-pill').textContent = '🔥 ' + streak + ' dia' + (streak !== 1 ? 's' : '');
+  document.getElementById('prog-meals').textContent = APP.meals.length;
+  document.getElementById('prog-goals').textContent = APP.goals.length;
+}
+
+// ═══════════════════════════════════════════
+//  MEALS
+// ═══════════════════════════════════════════
+function onMealPhoto(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = document.getElementById('meal-photo-prev');
+    img.src = ev.target.result; img.style.display = 'block';
+    document.getElementById('meal-zone-ph').style.display = 'none';
+    document.getElementById('meal-zone').classList.add('has-img');
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveMeal() {
+  const name = document.getElementById('m-name').value.trim();
+  if (!name) { toast('Informe o nome da refeição!', true); return; }
+  const foods = document.getElementById('m-foods').value.trim();
+  const cal   = parseInt(document.getElementById('m-cal').value)  || 0;
+  const prot  = parseInt(document.getElementById('m-prot').value) || 0;
+  const carb  = parseInt(document.getElementById('m-carb').value) || 0;
+  const fat   = parseInt(document.getElementById('m-fat').value)  || 0;
+  const time  = document.getElementById('m-time').value || new Date().toTimeString().slice(0, 5);
+  const prevEl = document.getElementById('meal-photo-prev');
+  const photo = (prevEl.src && prevEl.src.startsWith('data:')) ? prevEl.src : null;
+
+  APP.meals.unshift({ id: Date.now(), name, foods, cal, prot, carb, fat, time, photo });
+  APP.flags.mealSaved = true;
+  persist(); renderMeals(); closeModal('modal-meal'); toast('🥗 Refeição salva!');
+
+  // reset form
+  ['m-name','m-foods','m-cal','m-prot','m-carb','m-fat','m-time'].forEach(id => document.getElementById(id).value = '');
+  prevEl.style.display = 'none'; prevEl.src = '';
+  document.getElementById('meal-zone-ph').style.display = 'block';
+  document.getElementById('meal-zone').classList.remove('has-img');
+  document.getElementById('meal-photo-input').value = '';
+  checkAchievements();
+}
+
+function deleteMeal(id) {
+  APP.meals = APP.meals.filter(m => m.id !== id);
+  persist(); renderMeals(); toast('Refeição removida');
+}
+
+function renderMeals() {
+  const el = document.getElementById('meal-list');
+  const totals = APP.meals.reduce((a, m) => ({
+    cal: a.cal + m.cal, prot: a.prot + m.prot, carb: a.carb + m.carb, fat: a.fat + m.fat
+  }), { cal: 0, prot: 0, carb: 0, fat: 0 });
+  document.getElementById('tot-cal').textContent  = totals.cal;
+  document.getElementById('tot-prot').textContent = totals.prot + 'g';
+  document.getElementById('tot-carb').textContent = totals.carb + 'g';
+  document.getElementById('tot-fat').textContent  = totals.fat + 'g';
+
+  if (!APP.meals.length) {
+    el.innerHTML = '<div class="empty-box"><div class="empty-box-icon">🥗</div><div class="empty-box-t">Nenhuma refeição</div><div class="empty-box-s">Toque em + Adicionar ou escaneie abaixo</div></div>';
+    return;
+  }
+  el.innerHTML = APP.meals.map(m => `
+    <div class="meal-card">
+      ${m.photo
+        ? `<img class="meal-thumb" src="${m.photo}" alt="${m.name}">`
+        : `<div class="meal-thumb-ph">${mealIcon(m.name)}</div>`
+      }
+      <div class="meal-info">
+        <div class="meal-name">${m.name}</div>
+        <div class="meal-meta">${m.time}${m.foods ? ' · ' + m.foods : ''}</div>
+        <div class="meal-meta">P:${m.prot}g · C:${m.carb}g · G:${m.fat}g</div>
+      </div>
+      <div class="meal-kcal">${m.cal} kcal</div>
+      <button class="del-btn" onclick="deleteMeal(${m.id})" title="Remover">
+        <svg viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14a2,2,0,0,1-2,2H8a2,2,0,0,1-2-2L5,6"/><path d="M10,11v6"/><path d="M14,11v6"/><path d="M9,6V4h6v2"/></svg>
+      </button>
+    </div>
+  `).join('');
+}
+
+function mealIcon(name) {
+  const n = (name || '').toLowerCase();
+  if (n.includes('café') || n.includes('cafe') || n.includes('manhã')) return '☕';
+  if (n.includes('almoço') || n.includes('almoco')) return '🍽️';
+  if (n.includes('janta')) return '🌙';
+  if (n.includes('lanche')) return '🥪';
+  if (n.includes('fruta')) return '🍎';
+  if (n.includes('salada')) return '🥗';
+  return '🍴';
+}
+
+// ═══════════════════════════════════════════
+//  FOOD DATABASE (TACO - Tabela Brasileira)
+// ═══════════════════════════════════════════
+const FOOD_DB = [
+  {n:"Arroz branco cozido",cal:128,p:2.5,c:28.1,f:0.2,por:100},
+  {n:"Arroz integral cozido",cal:124,p:2.6,c:25.8,f:1.0,por:100},
+  {n:"Feijão carioca cozido",cal:76,p:4.8,c:13.6,f:0.5,por:100},
+  {n:"Feijão preto cozido",cal:77,p:4.5,c:14.0,f:0.5,por:100},
+  {n:"Frango grelhado (peito)",cal:159,p:32.0,c:0,f:3.2,por:100},
+  {n:"Frango assado (coxa)",cal:215,p:26.0,c:0,f:12.0,por:100},
+  {n:"Carne bovina grelhada (patinho)",cal:219,p:32.0,c:0,f:9.8,por:100},
+  {n:"Carne moída refogada",cal:243,p:26.0,c:0,f:15.0,por:100},
+  {n:"Ovo cozido inteiro",cal:146,p:13.3,c:0.6,f:9.5,por:100},
+  {n:"Ovo mexido",cal:168,p:11.9,c:1.2,f:12.6,por:100},
+  {n:"Leite integral",cal:61,p:3.2,c:4.5,f:3.3,por:100},
+  {n:"Leite desnatado",cal:35,p:3.4,c:5.1,f:0.2,por:100},
+  {n:"Iogurte natural integral",cal:66,p:3.8,c:4.9,f:3.3,por:100},
+  {n:"Queijo minas frescal",cal:264,p:17.4,c:3.0,f:20.2,por:100},
+  {n:"Queijo mussarela",cal:300,p:22.0,c:2.0,f:22.0,por:100},
+  {n:"Pão francês",cal:300,p:9.4,c:58.6,f:3.1,por:100},
+  {n:"Pão de forma integral",cal:253,p:8.2,c:46.0,f:3.8,por:100},
+  {n:"Macarrão cozido",cal:149,p:5.0,c:29.4,f:1.0,por:100},
+  {n:"Batata cozida",cal:86,p:1.9,c:19.8,f:0.1,por:100},
+  {n:"Batata-doce cozida",cal:77,p:0.6,c:18.4,f:0.1,por:100},
+  {n:"Mandioca cozida",cal:125,p:0.6,c:30.1,f:0.3,por:100},
+  {n:"Banana prata",cal:98,p:1.3,c:26.0,f:0.1,por:100},
+  {n:"Banana nanica",cal:92,p:1.4,c:23.8,f:0.1,por:100},
+  {n:"Maçã com casca",cal:56,p:0.3,c:15.2,f:0.1,por:100},
+  {n:"Laranja pera",cal:46,p:0.9,c:11.5,f:0.1,por:100},
+  {n:"Mamão papaia",cal:40,p:0.5,c:10.4,f:0.1,por:100},
+  {n:"Abacate",cal:96,p:1.2,c:6.0,f:8.4,por:100},
+  {n:"Tomate",cal:15,p:0.9,c:3.1,f:0.2,por:100},
+  {n:"Alface",cal:11,p:1.3,c:1.7,f:0.2,por:100},
+  {n:"Brócolis cozido",cal:34,p:3.0,c:5.8,f:0.4,por:100},
+  {n:"Cenoura crua",cal:34,p:0.9,c:7.7,f:0.2,por:100},
+  {n:"Couve refogada",cal:33,p:3.4,c:3.5,f:0.8,por:100},
+  {n:"Azeite de oliva",cal:884,p:0,c:0,f:100,por:100},
+  {n:"Óleo de soja",cal:884,p:0,c:0,f:100,por:100},
+  {n:"Manteiga",cal:726,p:0.9,c:0,f:82.0,por:100},
+  {n:"Açúcar refinado",cal:400,p:0,c:99.9,f:0,por:100},
+  {n:"Mel",cal:309,p:0.3,c:84.0,f:0,por:100},
+  {n:"Aveia em flocos",cal:394,p:13.9,c:66.6,f:8.5,por:100},
+  {n:"Whey protein (1 scoop)",cal:120,p:24.0,c:3.0,f:2.0,por:30},
+  {n:"Amendoim torrado",cal:581,p:26.0,c:16.1,f:47.5,por:100},
+  {n:"Castanha do pará",cal:643,p:14.3,c:15.1,f:63.5,por:100},
+  {n:"Salmão grelhado",cal:208,p:20.4,c:0,f:13.4,por:100},
+  {n:"Atum em lata (água)",cal:109,p:24.4,c:0,f:0.8,por:100},
+  {n:"Tilápia grelhada",cal:128,p:26.0,c:0,f:2.7,por:100},
+  {n:"Coca-Cola (lata 350ml)",cal:140,p:0,c:37.0,f:0,por:350},
+  {n:"Suco de laranja natural",cal:44,p:0.6,c:10.0,f:0.2,por:100},
+  {n:"Café preto sem açúcar",cal:2,p:0.3,c:0,f:0,por:100},
+  {n:"Refrigerante zero (lata)",cal:0,p:0,c:0,f:0,por:350},
+  {n:"Pão de queijo assado",cal:363,p:6.1,c:54.7,f:13.0,por:100},
+  {n:"Tapioca pronta",cal:350,p:0.2,c:86.4,f:0.1,por:100},
+  {n:"Coxinha frita",cal:295,p:9.6,c:30.0,f:15.0,por:100},
+  {n:"Pizza mussarela (fatia)",cal:237,p:11.0,c:29.0,f:9.0,por:100},
+  {n:"Hambúrguer artesanal",cal:295,p:20.0,c:24.0,f:12.0,por:150},
+  {n:"Salada de frutas",cal:50,p:0.6,c:12.5,f:0.2,por:100},
+  {n:"Vitamina de banana com leite",cal:98,p:3.0,c:18.0,f:2.0,por:200},
+  {n:"Granola",cal:423,p:10.0,c:67.0,f:14.0,por:100},
+  {n:"Cream cracker",cal:444,p:9.6,c:68.0,f:13.7,por:100},
+  {n:"Requeijão cremoso",cal:257,p:9.1,c:3.1,f:23.2,por:100},
+  {n:"Margarina",cal:543,p:0.5,c:0.3,f:60.0,por:100},
+  {n:"Linguiça toscana assada",cal:325,p:16.0,c:2.0,f:28.0,por:100},
+  {n:"Caldo de feijão",cal:60,p:3.0,c:9.0,f:1.0,por:200},
+  {n:"Sopa de legumes",cal:45,p:2.0,c:8.0,f:0.5,por:200},
+  {n:"Bolo simples",cal:344,p:5.4,c:56.0,f:11.0,por:100},
+  {n:"Brigadeiro",cal:395,p:4.4,c:60.0,f:14.0,por:100},
+  {n:"Iogurte grego integral",cal:133,p:9.0,c:5.0,f:8.0,por:100},
+  {n:"Proteína de soja texturizada",cal:330,p:54.0,c:26.0,f:1.0,por:100},
+  {n:"Lentilha cozida",cal:93,p:6.9,c:16.3,f:0.5,por:100},
+  {n:"Grão-de-bico cozido",cal:164,p:8.9,c:27.4,f:2.6,por:100},
+  {n:"Quinoa cozida",cal:120,p:4.4,c:21.3,f:1.9,por:100},
+  {n:"Espinafre cozido",cal:23,p:2.9,c:3.4,f:0.4,por:100},
+  {n:"Milho cozido",cal:123,p:3.5,c:27.0,f:1.3,por:100},
+  {n:"Ervilha cozida",cal:69,p:5.4,c:11.4,f:0.4,por:100},
+  {n:"Abóbora cozida",cal:26,p:1.2,c:5.9,f:0.1,por:100},
+  {n:"Chuchu cozido",cal:22,p:1.0,c:4.5,f:0.2,por:100},
+  {n:"Beterraba cozida",cal:39,p:1.9,c:8.8,f:0.1,por:100},
+  {n:"Pepino",cal:10,p:0.7,c:2.0,f:0.1,por:100},
+  {n:"Cebola",cal:40,p:1.2,c:9.5,f:0.1,por:100},
+  {n:"Alho",cal:149,p:6.4,c:33.1,f:0.5,por:100},
+  {n:"Limão",cal:38,p:0.9,c:9.6,f:0.4,por:100},
+  {n:"Abacaxi",cal:48,p:0.9,c:12.3,f:0.1,por:100},
+  {n:"Manga",cal:64,p:0.8,c:16.4,f:0.3,por:100},
+  {n:"Morango",cal:30,p:0.7,c:7.1,f:0.3,por:100},
+  {n:"Uva",cal:69,p:0.6,c:17.7,f:0.3,por:100},
+  {n:"Melancia",cal:33,p:0.9,c:7.7,f:0.4,por:100},
+  {n:"Melão",cal:29,p:0.7,c:7.0,f:0.1,por:100},
+  {n:"Pêra",cal:55,p:0.4,c:14.9,f:0.1,por:100},
+  {n:"Kiwi",cal:61,p:1.1,c:14.7,f:0.5,por:100},
+  {n:"Chocolate ao leite",cal:535,p:7.7,c:59.4,f:29.7,por:100},
+  {n:"Chocolate 70% cacau",cal:530,p:9.5,c:40.0,f:38.0,por:100},
+  {n:"Sorvete de creme",cal:201,p:3.5,c:24.8,f:10.0,por:100},
+  {n:"Croissant",cal:406,p:8.2,c:45.8,f:20.0,por:100},
+  {n:"Sucrilhos / cereal matinal",cal:376,p:6.0,c:85.0,f:0.9,por:100},
+  {n:"Pipoca sem manteiga",cal:375,p:12.0,c:74.0,f:4.5,por:100},
+  {n:"Batata frita",cal:312,p:3.4,c:39.5,f:15.0,por:100},
+  {n:"Nuggets de frango",cal:250,p:14.0,c:21.0,f:11.0,por:100},
+];
+
+let SELECTED_FOOD = null;
+
+function searchFood() {
+  const q = document.getElementById('food-search-input').value.trim().toLowerCase();
+  if (!q) { toast('Digite o nome do alimento!', true); return; }
+  renderSearchResults(q);
+}
+
+function quickSearch(term) {
+  document.getElementById('food-search-input').value = term;
+  renderSearchResults(term.toLowerCase());
+}
+
+function renderSearchResults(q) {
+  const terms = q.split(' ').filter(Boolean);
+  const results = FOOD_DB.filter(f =>
+    terms.every(t => f.n.toLowerCase().includes(t))
+  ).slice(0, 8);
+
+  const el = document.getElementById('search-results');
+  document.getElementById('portion-panel').style.display = 'none';
+
+  if (!results.length) {
+    el.innerHTML = '<div class="empty-box" style="padding:14px"><div class="empty-box-icon">🔍</div><div class="empty-box-t">Nenhum resultado</div><div class="empty-box-s">Tente outro nome ou use + Manual</div></div>';
+    return;
+  }
+  el.innerHTML = results.map((f, i) => `
+    <div onclick="selectFood(${FOOD_DB.indexOf(f)})" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--brd);cursor:pointer;transition:background .15s" onmouseover="this.style.background='rgba(232,98,42,.04)'" onmouseout="this.style.background=''">
+      <div>
+        <div style="font-size:.84rem;font-weight:600">${f.n}</div>
+        <div style="font-size:.67rem;color:var(--dim);margin-top:2px">
+          <span style="color:var(--acc);font-weight:700">${f.cal} kcal</span>
+          &nbsp;· P:${f.p}g · C:${f.c}g · G:${f.f}g
+          &nbsp;<span style="opacity:.6">(por ${f.por}g)</span>
+        </div>
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--acc)" stroke-width="2.5" stroke-linecap="round"><polyline points="9,18 15,12 9,6"/></svg>
+    </div>
+  `).join('');
+}
+
+function selectFood(idx) {
+  SELECTED_FOOD = FOOD_DB[idx];
+  document.getElementById('portion-food-name').textContent = SELECTED_FOOD.n;
+  document.getElementById('portion-grams').value = SELECTED_FOOD.por;
+  document.getElementById('portion-panel').style.display = 'block';
+  updatePortionPreview();
+  document.getElementById('portion-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function updatePortionPreview() {
+  if (!SELECTED_FOOD) return;
+  const g = parseFloat(document.getElementById('portion-grams').value) || 100;
+  const r = SELECTED_FOOD.por;
+  const cal  = Math.round(SELECTED_FOOD.cal  * g / r);
+  const prot = Math.round(SELECTED_FOOD.p * g / r * 10) / 10;
+  const carb = Math.round(SELECTED_FOOD.c * g / r * 10) / 10;
+  const fat  = Math.round(SELECTED_FOOD.f * g / r * 10) / 10;
+
+  document.getElementById('portion-macros-preview').innerHTML = `
+    <div class="nc"><div class="nc-v" style="color:var(--acc)">${cal}</div><div class="nc-l">kcal</div></div>
+    <div class="nc"><div class="nc-v" style="color:var(--blu)">${prot}g</div><div class="nc-l">Proteína</div></div>
+    <div class="nc"><div class="nc-v" style="color:var(--gld)">${carb}g</div><div class="nc-l">Carb</div></div>
+    <div class="nc"><div class="nc-v" style="color:var(--grn)">${fat}g</div><div class="nc-l">Gordura</div></div>
+  `;
+}
+
+function addPortionToLog() {
+  if (!SELECTED_FOOD) return;
+  const g    = parseFloat(document.getElementById('portion-grams').value) || 100;
+  const r    = SELECTED_FOOD.por;
+  const meal = document.getElementById('portion-meal-name').value;
+  const cal  = Math.round(SELECTED_FOOD.cal  * g / r);
+  const prot = Math.round(SELECTED_FOOD.p * g / r * 10) / 10;
+  const carb = Math.round(SELECTED_FOOD.c * g / r * 10) / 10;
+  const fat  = Math.round(SELECTED_FOOD.f * g / r * 10) / 10;
+
+  APP.meals.unshift({
+    id: Date.now(),
+    name: meal,
+    foods: SELECTED_FOOD.n + ' (' + g + 'g)',
+    cal, prot, carb, fat,
+    time: new Date().toTimeString().slice(0, 5),
+    photo: null
+  });
+  APP.flags.mealSaved = true;
+  persist(); renderMeals();
+
+  document.getElementById('portion-panel').style.display = 'none';
+  document.getElementById('food-search-input').value = '';
+  document.getElementById('search-results').innerHTML = '';
+  SELECTED_FOOD = null;
+  toast('🥗 ' + meal + ' adicionado!');
+  checkAchievements();
+}
+
+// ─── Old AI scan stubs (kept for compatibility) ──
+function onAIPhoto() {}
+function runAIScan() {}
+function saveAIMeal() {}
+
+// ═══════════════════════════════════════════
+//  GOALS
+// ═══════════════════════════════════════════
+function saveGoal() {
+  const title = document.getElementById('g-title').value.trim();
+  if (!title) { toast('Informe o título da meta!', true); return; }
+  const target = parseFloat(document.getElementById('g-target').value);
+  if (!target || target <= 0) { toast('Informe o valor da meta!', true); return; }
+
+  APP.goals.unshift({
+    id: Date.now(),
+    title,
+    cat:    document.getElementById('g-cat').value,
+    curr:   parseFloat(document.getElementById('g-curr').value) || 0,
+    target,
+    unit:   document.getElementById('g-unit').value.trim(),
+    date:   document.getElementById('g-date').value,
+    desc:   document.getElementById('g-desc').value.trim()
+  });
+  APP.flags.goalSaved = true;
+  persist(); renderGoals(); closeModal('modal-goal'); toast('🎯 Meta criada!');
+  ['g-title','g-curr','g-target','g-unit','g-date','g-desc'].forEach(id => document.getElementById(id).value = '');
+  checkAchievements();
+}
+
+function openUpdateGoal(id) {
+  const g = APP.goals.find(g => g.id === id); if (!g) return;
+  document.getElementById('upd-gid').value = id;
+  document.getElementById('upd-val').value = g.curr;
+  document.getElementById('upd-hint').textContent = `Novo valor (atual: ${g.curr} | meta: ${g.target} ${g.unit})`;
+  openModal('modal-upd');
+}
+
+function doUpdateGoal() {
+  const id  = parseInt(document.getElementById('upd-gid').value);
+  const val = parseFloat(document.getElementById('upd-val').value);
+  if (isNaN(val)) { toast('Valor inválido!', true); return; }
+  const g = APP.goals.find(g => g.id === id); if (!g) return;
+  const prev = g.curr;
+  g.curr = val;
+  persist(); renderGoals(); closeModal('modal-upd');
+  toast(val >= g.target ? '🎉 Meta atingida!' : '📈 Progresso atualizado!');
+}
+
+function deleteGoal(id) {
+  APP.goals = APP.goals.filter(g => g.id !== id);
+  persist(); renderGoals(); toast('Meta removida');
+}
+
+function renderGoals() {
+  const el = document.getElementById('goals-list');
+  document.getElementById('prog-goals').textContent = APP.goals.length;
+  if (!APP.goals.length) {
+    el.innerHTML = '<div class="empty-box"><div class="empty-box-icon">🎯</div><div class="empty-box-t">Nenhuma meta criada</div><div class="empty-box-s">Toque em + Nova Meta para começar!</div></div>';
+    return;
+  }
+  el.innerHTML = APP.goals.map(g => {
+    const pct   = Math.min(100, Math.round((g.curr / g.target) * 100));
+    const color = CAT_COLOR[g.cat] || 'var(--acc)';
+    const emoji = CAT_EMOJI[g.cat]  || '🎯';
+    const done  = pct >= 100;
+    return `
+      <div class="goal-item" style="border-left-color:${color}${done ? ';background:rgba(62,207,142,.05)' : ''}">
+        <div class="goal-top">
+          <div>
+            <div class="goal-title-t">${done ? '✅ ' : emoji + ' '}${g.title}</div>
+            <div class="goal-cat-t">${g.cat}${g.date ? ' · ' + fmtDate(g.date) : ''}${g.desc ? ' · ' + g.desc : ''}</div>
+          </div>
+          <div class="goal-btns">
+            <button class="icon-btn" onclick="openUpdateGoal(${g.id})" title="Atualizar">
+              <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="icon-btn" onclick="deleteGoal(${g.id})" title="Excluir">
+              <svg viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14a2,2,0,0,1-2,2H8a2,2,0,0,1-2-2L5,6"/><path d="M10,11v6"/><path d="M14,11v6"/><path d="M9,6V4h6v2"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="prog-bar-wrap"><div class="prog-bar" style="width:${pct}%;background:${color}"></div></div>
+        <div class="prog-info">
+          <span><b>${g.curr}</b> / ${g.target} ${g.unit}</span>
+          <span><b style="color:${color}">${pct}%</b>${done ? ' 🎉' : ''}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function fmtDate(d) {
+  if (!d) return '';
+  const [y, m, dd] = d.split('-');
+  return dd + '/' + m + '/' + y;
+}
+
+// ═══════════════════════════════════════════
+//  COACH
+// ═══════════════════════════════════════════
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text  = input.value.trim(); if (!text) return;
+  input.value = '';
+  appendMsg(text, 'me');
+  APP.history.push({ role: 'user', content: text });
+  APP.flags.chatUsed = true;
+  persist(); checkAchievements();
+
+  const typing = document.getElementById('typing');
+  typing.classList.add('on');
+  document.getElementById('chat-wrap').scrollTop = 9999;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 700,
+        system: 'Você é o Coach de IA da NutriTech, criado pelo Phedro Marcollino — nutricionista, motorista de app e especialista em tecnologia e IA. Responda sempre em português brasileiro, de forma direta, amigável e prática. Use **negrito** para destacar pontos. Máximo 3 parágrafos curtos. Áreas: nutrição, saúde, produtividade, motoristas de app, IA, concursos públicos, planilhas e gestão.',
+        messages: APP.history.slice(-12)
+      })
+    });
+    const data  = await res.json();
+    const reply = data.content[0].text;
+    APP.history.push({ role: 'assistant', content: reply });
+    persist();
+    typing.classList.remove('on');
+    appendMsg(reply, 'ai');
+  } catch(err) {
+    typing.classList.remove('on');
+    appendMsg('Desculpe, tive um problema de conexão. Tente novamente! 🙏', 'ai');
+  }
+}
+
+function sendQuick(text) {
+  document.getElementById('chat-input').value = text;
+  goTo('coach');
+  setTimeout(sendMessage, 100);
+}
+
+function appendMsg(text, type) {
+  const div = document.createElement('div');
+  div.className = 'msg msg-' + type;
+  div.innerHTML = text
+    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+    .replace(/\n/g, '<br>');
+  const wrap = document.getElementById('chat-wrap');
+  wrap.appendChild(div);
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+// ═══════════════════════════════════════════
+//  PROGRESS
+// ═══════════════════════════════════════════
+function updateRing() {
+  const m  = APP.meals.length;
+  const g  = APP.goals.length;
+  const td = APP.tasksDone;
+  const ch = APP.flags.chatUsed ? 1 : 0;
+  const score = Math.min(100, Math.round(td * 14 + Math.min(5, m) * 6 + Math.min(3, g) * 5 + ch * 4));
+
+  document.getElementById('ring-pct').textContent = score + '%';
+  const offset = 289.03 * (1 - score / 100);
+  document.getElementById('ring-path').style.strokeDashoffset = offset;
+
+  const habs = [
+    { fill: 'hf1', pct: 'hp1', v: td > 0 ? 65 : 0 },
+    { fill: 'hf2', pct: 'hp2', v: Math.min(100, m * 25) },
+    { fill: 'hf3', pct: 'hp3', v: td >= 4 ? 80 : td * 20 },
+    { fill: 'hf4', pct: 'hp4', v: ch ? 80 : 0 }
+  ];
+  habs.forEach(h => {
+    document.getElementById(h.fill).style.width = h.v + '%';
+    document.getElementById(h.pct).textContent  = h.v + '%';
+  });
+}
+
+// ═══════════════════════════════════════════
+//  ACHIEVEMENTS
+// ═══════════════════════════════════════════
+function checkAchievements() {
+  if (APP.flags.mealSaved)         unlock('ac1');
+  if (APP.flags.goalSaved)         unlock('ac2');
+  if (APP.flags.chatUsed)          unlock('ac3');
+  if (APP.pts >= 100)              unlock('ac4');
+  if (APP.streak >= 3)             unlock('ac5');
+  if (APP.streak >= 7)             unlock('ac6');
+  renderStats();
+  updateRing();
+}
+
+function unlock(id) {
+  const el = document.getElementById(id);
+  if (el && el.classList.contains('locked')) {
+    el.classList.remove('locked');
+    el.classList.add('open');
+  }
+}
+
+// ═══════════════════════════════════════════
+//  PWA — Service Worker
+// ═══════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('SW registrado:', reg.scope))
+      .catch(err => console.log('SW erro:', err));
+  });
+}
+
+// ─── Install banner ───────────────────────
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const banner = document.getElementById('install-banner');
+  if (banner) banner.style.display = 'flex';
+});
+
+function installPWA() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(() => {
+    deferredPrompt = null;
+    const banner = document.getElementById('install-banner');
+    if (banner) banner.style.display = 'none';
+  });
+}
+
+window.addEventListener('appinstalled', () => {
+  const banner = document.getElementById('install-banner');
+  if (banner) banner.style.display = 'none';
+  toast('🎉 App instalado com sucesso!');
+});
+</script>
+</body>
+</html>

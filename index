@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NutriTech | Infoprodutos</title>
+<meta name="description" content="NutriTech — Nutricionista, especialista em tecnologia, IA, planilhas e gestão. Conheça os infoprodutos.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+
+<style>
+/* ─── RESET & BASE ────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+:root {
+  --bg:        #07090f;
+  --surface:   #0e1220;
+  --card:      #121828;
+  --border:    #1e2840;
+  --border2:   #2a3560;
+  --accent:    #e8622a;
+  --gold:      #f5a623;
+  --green:     #3ecf8e;
+  --blue:      #5b8fff;
+  --text:      #eef0f8;
+  --muted:     #6b7494;
+  --faint:     #1a2035;
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --radius:    16px;
+  --glow:      0 0 40px rgba(232,98,42,0.12);
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ─── NOISE TEXTURE OVERLAY ──────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.4;
+}
+
+/* ─── SCROLLBAR ──────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+
+/* ─── ANIMATIONS ─────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-ring {
+  0%   { transform: scale(1);   opacity: 0.6; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+.fade-up { animation: fadeUp 0.7s cubic-bezier(.22,1,.36,1) both; }
+.delay-1 { animation-delay: .1s; }
+.delay-2 { animation-delay: .22s; }
+.delay-3 { animation-delay: .34s; }
+.delay-4 { animation-delay: .46s; }
+.delay-5 { animation-delay: .58s; }
+
+/* ─── LAYOUT ─────────────────────────────────────── */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+section { padding: 80px 0; }
+section + section { padding-top: 0; }
+
+/* ─── NAV ─────────────────────────────────────────── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(7,9,15,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-logo {
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--text);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+.nav-logo span { color: var(--accent); }
+
+.nav-links {
+  display: flex;
+  gap: 28px;
+  list-style: none;
+}
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--text); }
+
+.nav-cta {
+  background: var(--accent);
+  color: #fff !important;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-weight: 600 !important;
+  transition: opacity 0.2s !important;
+}
+.nav-cta:hover { opacity: 0.85; }
+
+/* ─── HERO ────────────────────────────────────────── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding-top: 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative background orbs */
+.hero::after {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(232,98,42,0.08) 0%, transparent 70%);
+  right: -100px; top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 60px;
+  align-items: center;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 20px;
+}
+.hero-eyebrow::before {
+  content: '';
+  width: 24px; height: 1px;
+  background: var(--accent);
+}
+
+.hero-title {
+  font-family: var(--font-head);
+  font-size: clamp(2.4rem, 5vw, 3.8rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  margin-bottom: 22px;
+}
+.hero-title .line2 {
+  background: linear-gradient(90deg, var(--accent), var(--gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-bio {
+  font-size: 1.05rem;
+  color: #8a93b8;
+  line-height: 1.75;
+  max-width: 520px;
+  margin-bottom: 36px;
+  font-weight: 300;
+}
+.hero-bio strong { color: var(--text); font-weight: 500; }
+
+.hero-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 48px;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 14px 28px;
+  border-radius: 999px;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 0 0 0 rgba(232,98,42,0.4);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(232,98,42,0.3);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--text);
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding: 14px 28px;
+  border-radius: 999px;
+  text-decoration: none;
+  border: 1px solid var(--border2);
+  transition: border-color 0.2s, background 0.2s;
+}
+.btn-ghost:hover { border-color: var(--accent); background: rgba(232,98,42,0.06); }
+
+.hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.tag {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 5px 13px;
+  border-radius: 999px;
+  border: 1px solid;
+}
+.tag-orange { color: var(--accent); border-color: rgba(232,98,42,0.35); background: rgba(232,98,42,0.07); }
+.tag-gold   { color: var(--gold);   border-color: rgba(245,166,35,0.35); background: rgba(245,166,35,0.07); }
+.tag-green  { color: var(--green);  border-color: rgba(62,207,142,0.35); background: rgba(62,207,142,0.07); }
+.tag-blue   { color: var(--blue);   border-color: rgba(91,143,255,0.35); background: rgba(91,143,255,0.07); }
+
+/* Avatar */
+.avatar-area {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.avatar-ring {
+  position: absolute;
+  width: 230px; height: 230px;
+  border-radius: 50%;
+  border: 1px dashed rgba(232,98,42,0.3);
+  animation: spin-slow 20s linear infinite;
+}
+.avatar-ring::after {
+  content: '';
+  position: absolute;
+  top: -4px; left: 50%;
+  width: 8px; height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+
+.avatar-pulse {
+  position: absolute;
+  width: 190px; height: 190px;
+  border-radius: 50%;
+  border: 2px solid rgba(232,98,42,0.2);
+  animation: pulse-ring 2.5s ease-out infinite;
+}
+
+.avatar-img {
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a2035 0%, #0e1525 100%);
+  border: 3px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-head);
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: var(--accent);
+  position: relative;
+  z-index: 1;
+  animation: float 4s ease-in-out infinite;
+  box-shadow: 0 0 60px rgba(232,98,42,0.15), inset 0 0 40px rgba(232,98,42,0.05);
+}
+
+.online-badge {
+  position: absolute;
+  bottom: 8px; right: 8px;
+  background: var(--green);
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 3px solid var(--bg);
+  z-index: 2;
+  animation: blink 2s ease-in-out infinite;
+}
+
+/* ─── STATS BAR ───────────────────────────────────── */
+.stats-bar {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 28px 0;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+}
+.stat-item {
+  text-align: center;
+  padding: 0 24px;
+  border-right: 1px solid var(--border);
+}
+.stat-item:last-child { border-right: none; }
+.stat-num {
+  font-family: var(--font-head);
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+
+/* ─── SECTION HEADER ──────────────────────────────── */
+.section-header {
+  margin-bottom: 48px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+.section-kicker {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.section-title {
+  font-family: var(--font-head);
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+.section-subtitle {
+  font-size: 0.9rem;
+  color: var(--muted);
+  max-width: 400px;
+  line-height: 1.6;
+  margin-top: 8px;
+}
+
+/* ─── PRODUCTS GRID ───────────────────────────────── */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 20px;
+}
+
+.product-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+  position: relative;
+}
+.product-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--accent);
+  box-shadow: var(--glow), 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.product-thumb {
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  position: relative;
+  overflow: hidden;
+}
+.product-thumb::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 50%, var(--card));
+}
+
+.thumb-nutrition { background: linear-gradient(135deg, #0f1a10, #1a2f14); }
+.thumb-driver    { background: linear-gradient(135deg, #12111a, #1e1830); }
+.thumb-sheets    { background: linear-gradient(135deg, #0f1820, #102030); }
+.thumb-ia        { background: linear-gradient(135deg, #150f1a, #1c1030); }
+
+.product-badge {
+  position: absolute;
+  top: 12px; right: 12px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  z-index: 1;
+}
+.badge-new   { background: rgba(62,207,142,0.15); color: var(--green); border: 1px solid rgba(62,207,142,0.3); }
+.badge-hot   { background: rgba(232,98,42,0.15);  color: var(--accent); border: 1px solid rgba(232,98,42,0.3); }
+.badge-pro   { background: rgba(245,166,35,0.15); color: var(--gold);  border: 1px solid rgba(245,166,35,0.3); }
+
+.product-body { padding: 20px; }
+
+.product-cat {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.product-name {
+  font-family: var(--font-head);
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  line-height: 1.3;
+  color: var(--text);
+}
+
+.product-desc {
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.product-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+.product-price {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text);
+}
+.product-price small {
+  font-size: 0.7rem;
+  color: var(--muted);
+  font-weight: 400;
+  display: block;
+  font-family: var(--font-body);
+  margin-bottom: 1px;
+}
+
+.btn-buy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.78rem;
+  padding: 9px 18px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: opacity 0.2s, transform 0.2s;
+  white-space: nowrap;
+}
+.btn-buy:hover { opacity: 0.85; transform: scale(1.04); }
+
+/* ─── ABOUT ───────────────────────────────────────── */
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.about-text p {
+  font-size: 0.97rem;
+  color: #8a93b8;
+  line-height: 1.8;
+  margin-bottom: 16px;
+  font-weight: 300;
+}
+.about-text strong { color: var(--text); font-weight: 500; }
+.about-text em { color: var(--gold); font-style: normal; }
+
+.about-skills {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.skill-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.skill-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+.si-orange { background: rgba(232,98,42,0.1); }
+.si-gold   { background: rgba(245,166,35,0.1); }
+.si-green  { background: rgba(62,207,142,0.1); }
+.si-blue   { background: rgba(91,143,255,0.1); }
+
+.skill-info { flex: 1; }
+.skill-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 5px;
+}
+.skill-bar-wrap {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.skill-bar {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 1s ease;
+}
+.bar-orange { background: linear-gradient(90deg, var(--accent), var(--gold)); }
+.bar-gold   { background: linear-gradient(90deg, var(--gold), #ffcc55); }
+.bar-green  { background: var(--green); }
+.bar-blue   { background: var(--blue); }
+
+/* ─── TESTIMONIAL / QUOTE ──────────────────────────── */
+.quote-section {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 64px 0;
+}
+
+.quote-inner {
+  max-width: 680px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.quote-mark {
+  font-family: var(--font-head);
+  font-size: 5rem;
+  line-height: 0.6;
+  color: var(--accent);
+  opacity: 0.4;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.quote-text {
+  font-family: var(--font-head);
+  font-size: clamp(1.2rem, 2.5vw, 1.55rem);
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--text);
+  margin-bottom: 20px;
+}
+
+.quote-sub {
+  font-size: 0.82rem;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ─── FOOTER ──────────────────────────────────────── */
+footer {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 48px 0 32px;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+.footer-brand-name {
+  font-family: var(--font-head);
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+.footer-brand-name span { color: var(--accent); }
+
+.footer-desc {
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.65;
+  max-width: 260px;
+}
+
+.footer-col-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.footer-links a {
+  color: #6b7494;
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--text); }
+
+.footer-bottom {
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.footer-copy { font-size: 0.75rem; color: var(--muted); }
+.footer-hotmart {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  border-radius: 999px;
+  transition: border-color 0.2s, color 0.2s;
+}
+.footer-hotmart:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ─── FLOATING CTA ────────────────────────────────── */
+.fab {
+  position: fixed;
+  bottom: 28px; right: 28px;
+  background: linear-gradient(135deg, var(--accent), var(--gold));
+  color: #fff;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 14px 22px;
+  border-radius: 999px;
+  text-decoration: none;
+  box-shadow: 0 8px 30px rgba(232,98,42,0.4);
+  z-index: 50;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fab:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 14px 40px rgba(232,98,42,0.5); }
+.fab-dot {
+  width: 8px; height: 8px;
+  background: #fff;
+  border-radius: 50%;
+  animation: blink 1.5s infinite;
+}
+
+/* ─── RESPONSIVE ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .hero-grid      { grid-template-columns: 1fr; text-align: center; }
+  .avatar-area    { order: -1; margin-bottom: 20px; }
+  .hero-bio       { margin: 0 auto 32px; }
+  .hero-actions   { justify-content: center; }
+  .hero-tags      { justify-content: center; }
+  .stats-grid     { grid-template-columns: repeat(2, 1fr); }
+  .stat-item:nth-child(2) { border-right: none; }
+  .stat-item:nth-child(3) { border-top: 1px solid var(--border); }
+  .stat-item:nth-child(4) { border-top: 1px solid var(--border); }
+  .about-grid     { grid-template-columns: 1fr; }
+  .footer-grid    { grid-template-columns: 1fr; }
+  .section-header { flex-direction: column; align-items: flex-start; }
+  .nav-links      { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- 
+  ✅ SITE NUTRITECH — Pronto para GitHub Pages
+  📌 SUBSTITUIR: Troque "https://go.hotmart.com/S104763878J" pelo seu link real da Hotmart
+  📌 SUBSTITUIR: Troque "https://www.instagram.com/phedromarcollinojr/" pelo seu @ do Instagram
+-->
+<!-- ─── NAV ──────────────────────────────────────── -->
+<nav>
+  <a href="#" class="nav-logo">NutriTech<span>.</span></a>
+  <ul class="nav-links">
+    <li><a href="#produtos">Produtos</a></li>
+    <li><a href="#sobre">Sobre</a></li>
+    <li><a href="https://go.hotmart.com/S104763878J" target="_blank" class="nav-cta">Ver na Hotmart ↗</a></li>
+  </ul>
+</nav>
+
+<!-- ─── HERO ──────────────────────────────────────── -->
+<section class="hero" id="inicio">
+  <div class="container">
+    <div class="hero-grid">
+
+      <div>
+        <div class="hero-eyebrow fade-up">Perfil Profissional</div>
+
+        <h1 class="hero-title fade-up delay-1">
+          Saúde, Tecnologia<br>
+          <span class="line2">e Resultados Reais.</span>
+        </h1>
+
+        <p class="hero-bio fade-up delay-2">
+          Sou <strong>nutricionista</strong> com vivência prática como <strong>motorista de aplicativo</strong>, 
+          domínio em <strong>planilhas e gestão</strong>, apaixonado por 
+          <strong>Inteligência Artificial e tecnologia</strong>. 
+          Aqui você encontra <em>infoprodutos que unem esses mundos</em> de forma direta e aplicável.
+        </p>
+
+        <div class="hero-actions fade-up delay-3">
+          <a href="#produtos" class="btn-primary">
+            Ver Produtos
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+          </a>
+          <a href="https://go.hotmart.com/S104763878J" target="_blank" class="btn-ghost">
+            Hotmart ↗
+          </a>
+        </div>
+
+        <div class="hero-tags fade-up delay-4">
+          <span class="tag tag-orange">🥦 Nutricionista</span>
+          <span class="tag tag-gold">🚗 Motorista de App</span>
+          <span class="tag tag-green">📊 Planilhas & Gestão</span>
+          <span class="tag tag-blue">🤖 IA & Tecnologia</span>
+        </div>
+      </div>
+
+      <div class="avatar-area fade-up delay-2">
+        <div class="avatar-ring"></div>
+        <div class="avatar-pulse"></div>
+        <div class="avatar-img">
+          N
+          <div class="online-badge"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── STATS BAR ──────────────────────────────────── -->
+<div class="stats-bar">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-num">4+</div>
+        <div class="stat-label">Áreas de Expertise</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Conteúdo Original</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">∞</div>
+        <div class="stat-label">Acesso Vitalício</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">★ 5.0</div>
+        <div class="stat-label">Avaliação Média</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── PRODUTOS ───────────────────────────────────── -->
+<section id="produtos">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <div class="section-kicker">Infoprodutos</div>
+        <h2 class="section-title">Conteúdo que<br>transforma sua rotina</h2>
+        <p class="section-subtitle">Cada produto foi desenvolvido com experiência prática, sem enrolação.</p>
+      </div>
+    </div>
+
+    <div class="products-grid">
+
+      <!-- Card 1 -->
+      <div class="product-card fade-up delay-1">
+        <div class="product-thumb thumb-nutrition">
+          🥗
+          <span class="product-badge badge-hot">🔥 MAIS VENDIDO</span>
+        </div>
+        <div class="product-body">
+          <div class="product-cat">Nutrição</div>
+          <div class="product-name">Alimentação Saudável para Quem Tem Pressa</div>
+          <div class="product-desc">Guia prático de nutrição para motoristas, trabalhadores autônomos e quem não tem tempo a perder.</div>
+          <div class="product-footer">
+            <div class="product-price">
+              <small>a partir de</small>
+              R$ 37,00
+            </div>
+            <a href="https://go.hotmart.com/S104763878J" target="_blank" class="btn-buy">Comprar ↗</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="product-card fade-up delay-2">
+        <div class="product-thumb thumb-driver">
+          🚗
+          <span class="product-badge badge-new">✦ NOVO</span>
+        </div>
+        <div class="product-body">
+          <div class="product-cat">Renda & Produtividade</div>
+          <div class="product-name">Motorista Inteligente: Maximize seus Ganhos</div>
+          <div class="product-desc">Estratégias, planilhas e tecnologia para ganhar mais rodando menos — com controle financeiro total.</div>
+          <div class="product-footer">
+            <div class="product-price">
+              <small>a partir de</small>
+              R$ 47,00
+            </div>
+            <a href="https://go.hotmart.com/S104763878J" target="_blank" class="btn-buy">Comprar ↗</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="product-card fade-up delay-3">
+        <div class="product-thumb thumb-sheets">
+          📊
+          <span class="product-badge badge-pro">⚡ PRO</span>
+        </div>
+        <div class="product-body">
+          <div class="product-cat">Gestão & Planilhas</div>
+          <div class="product-name">Planilhas que Trabalham por Você</div>
+          <div class="product-desc">Pack de planilhas prontas para controle financeiro, metas, dieta e gestão do tempo. Prático e editável.</div>
+          <div class="product-footer">
+            <div class="product-price">
+              <small>a partir de</small>
+              R$ 27,00
+            </div>
+            <a href="https://go.hotmart.com/S104763878J" target="_blank" class="btn-buy">Comprar ↗</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="product-card fade-up delay-4">
+        <div class="product-thumb thumb-ia">
+          🤖
+          <span class="product-badge badge-new">✦ NOVO</span>
+        </div>
+        <div class="product-body">
+          <div class="product-cat">Tecnologia & IA</div>
+          <div class="product-name">IA no seu Dia a Dia: Do Zero ao Avançado</div>
+          <div class="product-desc">Aprenda a usar Inteligência Artificial para trabalhar menos, ganhar tempo e se destacar no mercado.</div>
+          <div class="product-footer">
+            <div class="product-price">
+              <small>a partir de</small>
+              R$ 57,00
+            </div>
+            <a href="https://go.hotmart.com/S104763878J" target="_blank" class="btn-buy">Comprar ↗</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── QUOTE ──────────────────────────────────────── -->
+<div class="quote-section">
+  <div class="container">
+    <div class="quote-inner">
+      <span class="quote-mark">"</span>
+      <p class="quote-text">Quem entende de saúde, números e tecnologia está um passo à frente — e é exatamente isso que eu ensino.</p>
+      <span class="quote-sub">— Minha missão nos infoprodutos</span>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SOBRE ───────────────────────────────────────── -->
+<section id="sobre">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <div class="section-kicker">Sobre Mim</div>
+        <h2 class="section-title">Experiência real,<br>conteúdo direto.</h2>
+      </div>
+    </div>
+
+    <div class="about-grid">
+      <div class="about-text">
+        <p>
+          Sou <strong>nutricionista</strong> com formação técnica sólida e experiência no cuidado 
+          com alimentação e saúde. Ao mesmo tempo, vivo na pele a rotina de quem trabalha como 
+          <strong>motorista de aplicativo</strong> — o que me deu uma visão única sobre 
+          <em>produtividade, renda variável e gestão do tempo</em>.
+        </p>
+        <p>
+          Ao longo dessa jornada, desenvolvi expertise em <strong>planilhas e ferramentas de gestão</strong> 
+          para organizar finanças, metas e rotinas. E me apaixonei por <strong>tecnologia e IA</strong>, 
+          usando as melhores ferramentas digitais para criar soluções práticas para o dia a dia.
+        </p>
+        <p>
+          Meus infoprodutos nascem dessa combinação única: <em>conteúdo que funciona para quem trabalha de verdade</em>, sem teoria vazia.
+        </p>
+      </div>
+
+      <div class="about-skills">
+        <div class="skill-row">
+          <div class="skill-icon si-orange">🥗</div>
+          <div class="skill-info">
+            <div class="skill-name">Nutrição Clínica & Prática</div>
+            <div class="skill-bar-wrap"><div class="skill-bar bar-orange" style="width:92%"></div></div>
+          </div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-icon si-gold">🚗</div>
+          <div class="skill-info">
+            <div class="skill-name">Gestão de Renda Autônoma</div>
+            <div class="skill-bar-wrap"><div class="skill-bar bar-gold" style="width:85%"></div></div>
+          </div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-icon si-blue">📊</div>
+          <div class="skill-info">
+            <div class="skill-name">Planilhas & Excel Avançado</div>
+            <div class="skill-bar-wrap"><div class="skill-bar bar-blue" style="width:88%"></div></div>
+          </div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-icon si-green">🤖</div>
+          <div class="skill-info">
+            <div class="skill-name">Inteligência Artificial & Tech</div>
+            <div class="skill-bar-wrap"><div class="skill-bar bar-green" style="width:80%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─────────────────────────────────────── -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand-name">NutriTech<span>.</span></div>
+        <p class="footer-desc">Infoprodutos que unem saúde, tecnologia e gestão para transformar sua rotina e sua renda.</p>
+      </div>
+      <div>
+        <div class="footer-col-title">Navegação</div>
+        <ul class="footer-links">
+          <li><a href="#inicio">Início</a></li>
+          <li><a href="#produtos">Produtos</a></li>
+          <li><a href="#sobre">Sobre</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Links</div>
+        <ul class="footer-links">
+          <li><a href="https://go.hotmart.com/S104763878J" target="_blank">Hotmart ↗</a></li>
+          <li><a href="https://www.instagram.com/phedromarcollinojr/" target="_blank">@phedromarcollinojr ↗</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2026 NutriTech · Todos os direitos reservados</span>
+      <a href="https://go.hotmart.com/S104763878J" target="_blank" class="footer-hotmart">
+        🛒 Ver todos os produtos na Hotmart
+      </a>
+    </div>
+  </div>
+</footer>
+
+<!-- ─── FLOATING CTA ───────────────────────────────── -->
+<a href="https://go.hotmart.com/S104763878J" target="_blank" class="fab">
+  <div class="fab-dot"></div>
+  Ver na Hotmart
+</a>
+
+<!-- ─── SCRIPTS ────────────────────────────────────── -->
+<script>
+// Intersection Observer para animar elementos ao rolar
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.product-card, .skill-row').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(24px)';
+  el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+  observer.observe(el);
+});
+
+// Animar barras de skill ao entrar na tela
+const skillObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const bar = entry.target.querySelector('.skill-bar');
+      if (bar) {
+        const w = bar.style.width;
+        bar.style.width = '0';
+        setTimeout(() => { bar.style.width = w; }, 100);
+      }
+    }
+  });
+}, { threshold: 0.5 });
+
+document.querySelectorAll('.skill-row').forEach(el => skillObserver.observe(el));
+</script>
+
+</body>
+</html>
